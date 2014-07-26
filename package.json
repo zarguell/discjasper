@@ -1,6 +1,6 @@
 {
-  "name": "live-tweet-io",
-  "description": "Stream live tweets from San Francisco",
+  "name": "DiscJasper",
+  "description": "Tweets to tunes",
   "version": "0.0.1",
   "private": true,
   "dependencies": {
