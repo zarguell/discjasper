@@ -1,0 +1,12 @@
+{
+  "name": "live-tweet-io",
+  "description": "Stream live tweets from San Francisco",
+  "version": "0.0.1",
+  "private": true,
+  "dependencies": {
+    "express": "3.x",
+    "socket.io": "0.9.16",
+    "twit": "1.1.13",
+    "nodemon": "1.2.1"
+  }
+}
