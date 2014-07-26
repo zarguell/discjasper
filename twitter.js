@@ -16,6 +16,8 @@ var T = new Twit({
 });
 
 var stream = T.stream('user',{track : config.twitter_account});
+stream.start();
+
 var tweetsBuffer = [];
 var oldTweetsBuffer = [];
 
@@ -81,25 +83,13 @@ stream.on('reconnect', function (request, response, connectInterval) {
 });
 
 stream.on('tweet', function(tweet) {
-  console.log(tweet);
-	if (tweet.place == null) {
-		return ;
-	}
+  if (tweet.entities.user_mentions.length > 0) {
+    console.log(tweet.text);
+  } else {
 
-	//Create message containing tweet + location + username + profile pic
-	var msg = {};
-	msg.text = tweet.text;
-	msg.location = tweet.place.full_name;
-	msg.user = {
-		name: tweet.user.name, 
-		image: tweet.user.profile_image_url
-	};
+  }
 
-
-	//push msg into buffer
-	tweetsBuffer.push(msg);
-
-	broadcastTweets();
+	//broadcastTweets();
 });
 
 var broadcastTweets = function() {
