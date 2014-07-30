@@ -10,6 +10,13 @@ console.log('app started on port ' + server.address().port);
 app.use(express.json());
 app.use(express.urlencoded());
 app.use(express.logger());
+app.use(express.static(__dirname + '/public'));
+
+app.set("view options", {layout: false});
+
+app.get('/', function(req, res) {
+    res.render('index.html');
+});
 
 app.all('*', function(req, res, next) {
   	res.set('Access-Control-Allow-Origin', '*');
