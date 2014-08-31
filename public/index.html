@@ -5,9 +5,13 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <title>DiscJasper for Music</title>
+    <link href="main.css" rel="stylesheet"/>
   </head>
   <body>
-    <h1>Hello World</h1>
+    <div class="container">
+      <h1>Hello World</h1>
+      <div class="yt"></div>
+    </div>
     <script src="https://cdn.socket.io/socket.io-1.0.6.js"></script>
     <script src="http://code.jquery.com/jquery-1.11.1.js"></script>
     <script>
@@ -19,6 +23,8 @@
       socket.on('pong', function(msg) {
         console.log(msg);
         //socket.emit("ping", {txt: "ack"});
+
+        $(".yt").html('<iframe width="560" height="315" src="http://www.youtube.com/embed/' + msg.txt  + '?autoplay=1" frameborder="0" allowfullscreen></iframe>');
       });
 
       socket.on('disconnect', function () {

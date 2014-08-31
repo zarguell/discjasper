@@ -2,6 +2,8 @@ var Twit = require('twit');
 var io = require('./app').io;
 var config = require('./config')
 var isFirstConnectionToTwitter = true;
+var FeedParser = require('feedparser');
+var http = require('http');
 
 var T = new Twit({
     consumer_key: config.twitter_api_key,
@@ -23,8 +25,19 @@ io.sockets.on('connection', function (socket) {
   stream.on('tweet', function(tweet) {
     if (tweet.entities.user_mentions.length > 0) {
       console.log(tweet.text);
-      var songName = tweet.text.replace(/@frisbeehouse/i, "");
-      socket.emit("pong", {txt: songName});
+      var songName = tweet.text.replace(/@frisbeehouse/i, "").replace(" ", "+");
+      http.get('http://gdata.youtube.com/feeds/api/videos?q=' + songName  + '&max-results=1&v=2', function (res) {
+        res.pipe(new FeedParser({}))
+        .on('readable', function(){
+          var stream = this, item;
+          while (item = stream.read()){
+            var msg = item.guid.substr(item.guid.lastIndexOf(":") + 1);
+            console.log(msg);
+            socket.emit("pong", {txt: msg });
+          }
+        })
+      });
+
     } else {
 
     }
