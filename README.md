@@ -8,8 +8,8 @@ Dependencies:
 
 Download the files with:
 
-`git clone https://github.com/middleinitial/discjasper
-cd discjasper`
+```git clone https://github.com/middleinitial/discjasper
+cd discjasper```
 
 initialize the config.js file(at this time only @frisbeehouse is supported twitter account) 
 
