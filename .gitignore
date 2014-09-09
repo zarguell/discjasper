@@ -1,0 +1,10 @@
+node_modules/
+start_service.sh
+public/bourbon/
+public/neat/
+public/.sass-cache/
+public/main.css
+public/main.css.map
+public/main.scss
+.twitter.js.swp
+.sass-cache/
