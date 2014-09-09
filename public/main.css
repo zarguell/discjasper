@@ -1,3 +1,4 @@
+@charset "UTF-8";
 * {
   margin: 0;
   padding: 0; }
@@ -8,3 +9,33 @@
   right: 0;
   left: 0;
   bottom: 0; }
+
+.skipSong {
+  width: 100px;
+  height: 100px;
+  background: black; }
+
+#ulist li {
+  margin: 5px;
+  background: grey;
+  height: 50px;
+  vertical-align: middle; }
+  #ulist li .buttons {
+    display: inline-block;
+    float: right;
+    clear: right; }
+    #ulist li .buttons .up, #ulist li .buttons .down, #ulist li .buttons .remove {
+      font-size: 1em;
+      font-family: arial, sans-serif;
+      display: inline-block;
+      padding: 10px;
+      border: 1px solid black;
+      cursor: pointer; }
+    #ulist li .buttons .up:after {
+      content: "↑";
+      font-weight: bold; }
+    #ulist li .buttons .down:after {
+      font-weight: bold;
+      content: "↓"; }
+    #ulist li .buttons .remove:after {
+      content: "x"; }

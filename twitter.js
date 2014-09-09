@@ -6,8 +6,9 @@ var FeedParser = require('feedparser');
 var http = require('http');
 
 // Starting with no requests and bunny default, over
+var current_song;
 var requested_list = [];
-var default_list = [{id: "GVFWai1jVfs", time: "43"}, {id: "TbWKGO73Kds", time: "49"}];
+var default_list = [{id: "GVFWai1jVfs", time: "43", title: "30 Second Bunnies: Terminator"}, {id: "TbWKGO73Kds", time: "49", title:"30 Second Bunnies Freddy vs. Jason"}];
 
 //Connection to twitter
 var T = new Twit({
@@ -22,7 +23,77 @@ var stream = T.stream('user', {track: config.twitter_account });
 //Connection to the browser
 io.sockets.on('connection', function (socket) {
 
-  //Download billboard top 100 as default
+  billboardDefault();
+
+  socket.on('disconnect', function (socket) {
+    console.log("disconnect");
+  });
+
+  socket.on('next_song', function (data) {
+    playNext();
+  });
+
+  socket.on('load_playlist', function(data) {
+    sendLoadPlaylist();
+  });
+
+  socket.on('update_playlist', function(data) {
+    if (requested_list.length > 0) {
+      requested_list = data; 
+    } else {
+      default_list = data; 
+    }
+    sendLoadPlaylist();
+  });
+});
+
+function playNext() {
+  if (requested_list.length > 0) {
+    sendRequested();
+  } else {
+    sendDefault();
+  }
+  sendLoadPlaylist();
+}
+
+function sendLoadPlaylist() {
+  io.sockets.emit('load_playlist', activePlaylist());    
+}
+
+function sendDefault() {
+  current_song = default_list.shift();
+  io.sockets.emit('next_song', current_song);
+  default_list.push(current_song);
+}
+
+function sendRequested() {
+  current_song = requested_list.shift();
+  io.sockets.emit('next_song', current_song);
+}
+
+function activePlaylist() {
+  if (requested_list.length > 0) {
+    return requested_list;
+  } else {
+    return default_list;
+  }
+}
+
+stream.on('tweet', function(tweet) {
+  if (tweet.entities.user_mentions.length > 0) {
+    console.log(tweet.text);
+    var songName = tweet.text.replace(/@frisbeehouse/i, "");
+    ytSearch(songName, function (r) {
+      requested_list.push(r);
+      sendLoadPlaylist();
+    });
+  } else {
+
+  }
+});
+
+// PRIMARY DATA SOURCES
+function billboardDefault() {
   http.get('http://www.billboard.com/rss/charts/hot-100', function (res) {
     default_list = [];
     res.pipe(new FeedParser({}))
@@ -32,54 +103,12 @@ io.sockets.on('connection', function (socket) {
         var songName = item["rss:chart_item_title"]["#"] + " " + item["rss:artist"]["#"];
         ytSearch(songName, function (r) {
           default_list.push(r);
-          console.log(r);
+          sendLoadPlaylist();
         });
       }
     });
   });
-
-  playNext();
-
-  socket.on('disconnect', function (socket) {
-    console.log("disconnect");
-    stream.stop();
-  });
-
-  stream.on('tweet', function(tweet) {
-    if (tweet.entities.user_mentions.length > 0) {
-      console.log(tweet.text);
-      var songName = tweet.text.replace(/@frisbeehouse/i, "");
-      ytSearch(songName, function (r) {
-        requested_list.push(r);
-      });
-    } else {
-
-    }
-  });
-
-  socket.on('next_song', function (data) {
-    playNext();
-  });
-  
-  function playNext() {
-    if (requested_list.length > 0) {
-      sendRequested();
-    } else {
-      sendDefault();
-    }
-  }
-
-  function sendDefault() {
-    var playNow = default_list.shift();
-    socket.emit('next_song', playNow);
-    default_list.push(playNow);
-  }
-
-  function sendRequested() {
-    socket.emit('next_song', requested_list.shift());
-  }
-
-});
+}
 
 function ytSearch(songName, dataFun) {
   songName = songName.split(" ").join("+");
@@ -89,7 +118,8 @@ function ytSearch(songName, dataFun) {
       while (item = stream.read()){
         var vID = item.guid.substr(item.guid.lastIndexOf(":") + 1);
         var vTime = item['media:group']['yt:duration']['@'].seconds;
-        var val = ({id: vID, time: vTime});
+        var vTitle = item['media:group']['media:title']['#'];
+        var val = ({id: vID, time: vTime, title:vTitle});
         dataFun(val);
       }
     });
