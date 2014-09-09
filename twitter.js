@@ -21,7 +21,7 @@ var stream = T.stream('user', {track: config.twitter_account });
 //Connection to the browser
 io.sockets.on('connection', function (socket) {
 
-  sendDefault();
+  playNext();
 
   socket.on('disconnect', function (socket) {
     console.log("disconnect");
@@ -50,12 +50,16 @@ io.sockets.on('connection', function (socket) {
   });
 
   socket.on('next_song', function (data) {
+    playNext();
+  });
+  
+  function playNext() {
     if (requested_list.length > 0) {
       sendRequested();
     } else {
       sendDefault();
     }
-  });
+  }
 
   function sendDefault() {
     var playNow = default_list.shift();
