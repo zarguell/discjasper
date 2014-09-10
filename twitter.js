@@ -37,6 +37,10 @@ io.sockets.on('connection', function (socket) {
     sendLoadPlaylist();
   });
 
+  socket.on('current_song', function(data) {
+    socket.emit('current_song', current_song);
+  });
+
   socket.on('update_playlist', function(data) {
     if (requested_list.length > 0) {
       requested_list = data; 
