@@ -1,14 +1,13 @@
 var Twit = require('twit');
 var io = require('./app').io;
 var config = require('./config')
-var isFirstConnectionToTwitter = true;
 var FeedParser = require('feedparser');
 var http = require('http');
 
 // Starting with no requests and bunny default, over
 var current_song;
 var requested_list = [];
-var default_list = [{id: "GVFWai1jVfs", time: "43", title: "30 Second Bunnies: Terminator"}, {id: "TbWKGO73Kds", time: "49", title:"30 Second Bunnies Freddy vs. Jason"}];
+var default_list = [{id: "GVFWai1jVfs", time: "43", title: "30 Second Bunnies: Terminator"}];
 
 //Connection to twitter
 var T = new Twit({
@@ -17,16 +16,16 @@ var T = new Twit({
     access_token: config.twitter_access_token,        
     access_token_secret: config.twitter_access_token_secret 
 });
+
 // Initializes and starts twitter stream
 var stream = T.stream('user', {track: config.twitter_account });
+billboardDefault();
 
 //Connection to the browser
 io.sockets.on('connection', function (socket) {
 
-  billboardDefault();
-
   socket.on('disconnect', function (socket) {
-    console.log("disconnect");
+    console.log("disconnected a client");
   });
 
   socket.on('next_song', function (data) {
@@ -49,6 +48,7 @@ io.sockets.on('connection', function (socket) {
     }
     sendLoadPlaylist();
   });
+
 });
 
 function playNext() {
@@ -86,7 +86,9 @@ function activePlaylist() {
 stream.on('tweet', function(tweet) {
   if (tweet.entities.user_mentions.length > 0) {
     console.log(tweet.text);
-    var songName = tweet.text.replace(/@frisbeehouse/i, "");
+    var removeName = RegExp("@"+config.twitter_account, 'gi');
+    var songName = tweet.text.replace(removeName, "");
+    console.log(songName);
     ytSearch(songName, function (r) {
       requested_list.push(r);
       sendLoadPlaylist();
