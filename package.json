@@ -7,7 +7,6 @@
     "express": "3.x",
     "socket.io": "1.0.6",
     "twit": "1.1.13",
-    "sqlite3": "2.2.7",
     "feedparser":"0.16.3",
     "nodemon": "1.2.1"
   }
