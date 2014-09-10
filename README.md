@@ -1,4 +1,4 @@
-discjasper
+Disc Jasper
 ==========
 
 Tweet to Youtube song playlist
