@@ -9,7 +9,14 @@
 	</head>
 	
 	<body>
+    <div class="searchbar" style="display:none;">
+      <div class="addSong icon"></div>
+      <div class="searchBox">
+      <input type="text"/>
+      </div>
+    </div>
     <div class="toolbar">
+      <div class="searchSong icon"></div>
       <div class="skipSong icon"></div>
       <div class="currentSongName"></div>
     </div>
@@ -20,7 +27,7 @@
 	<script src="http://code.jquery.com/jquery-2.0.0.js"></script>
   <script src="/jquery-ui.min.js"></script>
 	<script>
-		var socket = io.connect("http://localhost:3000");
+		var socket = io.connect("http://"+location.hostname+":"+location.port);
 		var currentPlaylist = []; 
 		
     $("#plist").sortable({
@@ -59,6 +66,17 @@
 
     $(".skipSong").click( function () {
       socket.emit("next_song",{});
+    });
+
+    $(".searchSong").click( function() {
+      $(".searchbar").toggle();
+      $(".searchbar input").focus();
+    });
+
+    $(".addSong").click( function() {
+      socket.emit("add_song_to_start",{q: $(".searchbar input").val()}); 
+      $(".searchbar input").val("");
+      $(".searchbar").hide();
     });
 
 		function editedPlaylist() {

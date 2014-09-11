@@ -40,6 +40,13 @@ io.sockets.on('connection', function (socket) {
     socket.emit('current_song', current_song);
   });
 
+  socket.on('add_song_to_start', function(data) {
+    ytSearch(data.q, function (r) {
+      requested_list.unshift(r);
+      sendLoadPlaylist();
+    });
+  });
+
   socket.on('update_playlist', function(data) {
     if (requested_list.length > 0) {
       requested_list = data; 

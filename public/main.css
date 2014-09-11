@@ -27,12 +27,48 @@ body {
   font-family: "FontAwesome";
   font-size: 2em; }
 
+.searchbar {
+  position: relative;
+  height: 45px;
+  width: 100%; }
+  .searchbar .searchBox {
+    position: absolute;
+    display: block;
+    left: 0;
+    right: 76px; }
+    .searchbar .searchBox input {
+      width: 100%;
+      padding: 14px 15px 13px;
+      border: 0; }
+  .searchbar .addSong:after {
+    box-sizing: border-box;
+    content: "\f0fe";
+    background: #89CC4A;
+    padding: 7px 0 0 12px;
+    position: absolute;
+    right: 0;
+    width: 45px;
+    height: 44px;
+    font-size: 28px;
+    cursor: pointer; }
+
 .toolbar {
   height: 45px; }
   .toolbar .skipSong:after {
     box-sizing: border-box;
     content: "\f050";
-    background: red;
+    background: #FF4149;
+    padding: 7px 0 0 8px;
+    float: left;
+    width: 45px;
+    height: 45px;
+    font-size: 28px;
+    cursor: pointer;
+    border-right: 1px solid black; }
+  .toolbar .searchSong:after {
+    box-sizing: border-box;
+    content: "\f00e";
+    background: #89CC4A;
     padding: 7px 0 0 8px;
     float: left;
     width: 45px;
@@ -43,7 +79,7 @@ body {
   .toolbar .currentSongName {
     margin-left: 45px;
     padding: 16px 0 12px;
-    background: lightgreen;
+    background: #58C7FF;
     padding-left: 10px;
     white-space: nowrap;
     overflow: hidden;
