@@ -93,7 +93,7 @@ body {
   position: relative;
   text-shadow: 1px 1px white;
   color: black;
-  padding-left: 10px;
+  padding-left: 30px;
   padding-top: 15px;
   padding-bottom: 15px;
   margin-bottom: -1px;
@@ -110,6 +110,15 @@ body {
     display: none; }
   #plist li .title {
     vertical-align: middle; }
+  #plist li .handle:after {
+    content: "\f0c9";
+    position: absolute;
+    cursor: pointer;
+    top: 16px;
+    left: 5px;
+    color: black;
+    font-weight: normal;
+    font-size: 16px; }
   #plist li .trash:after {
     content: "\f1f8";
     position: absolute;

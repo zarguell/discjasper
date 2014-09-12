@@ -4,7 +4,7 @@
 		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 		<meta charset="utf-8">
 		<meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width; initial-scale=1.0">
+    <meta name="viewport" content="width=device-width; initial-scale=1.0, maximum-scale=1, user-scalable=0">
 		<title>Current Playlist</title>
 		<link href="main.css" rel="stylesheet"/>
 	</head>
@@ -34,6 +34,7 @@
 		
     $("#plist").sortable({
       axis: "y",
+      handle: ".handle",
       containment: "document", 
       stop: function( event, ui ) {
         htmlToList();   
@@ -100,7 +101,7 @@
 		function addWholePlToList() {
       $("#plist").html("");
 			for(var i = 0; i < currentPlaylist.length; i++) {
-        var h = '<li class="pitem"><span class="title">' + currentPlaylist[i].title + '</span>' +  
+        var h = '<li class="pitem"><div class="handle icon"></div><span class="title">' + currentPlaylist[i].title + '</span>' +  
           '<div class="data">' + JSON.stringify(currentPlaylist[i])  + '</div><div class="trash icon"></div></li>';
         $("#plist").append(h);
 			}
