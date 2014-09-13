@@ -21,7 +21,7 @@ body.player {
 
 .yt {
   position: absolute;
-  top: 0;
+  top: -10px;
   right: 0;
   left: 0;
   bottom: -35px;
