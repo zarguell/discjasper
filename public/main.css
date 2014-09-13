@@ -97,7 +97,7 @@ body.player {
   position: relative;
   text-shadow: 1px 1px white;
   color: black;
-  padding-left: 30px;
+  padding-left: 40px;
   padding-top: 15px;
   padding-bottom: 15px;
   margin-bottom: -1px;
@@ -124,8 +124,11 @@ body.player {
     content: "\f0c9";
     position: absolute;
     cursor: pointer;
-    top: 16px;
-    left: 5px;
+    top: 0px;
+    left: 0px;
+    padding: 15px 11px;
+    width: 23px;
+    height: 20px;
     color: black;
     font-weight: normal;
     font-size: 16px; }
