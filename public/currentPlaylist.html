@@ -12,9 +12,9 @@
 	<body>
     <div class="searchbar" style="display:none;">
       <div class="addSong icon"></div>
-      <div class="searchBox">
-      <input type="text"/>
-      </div>
+      <form class="searchBox">
+        <input type="text"/>
+      </form>
     </div>
     <div class="toolbar">
       <div class="searchSong icon"></div>
@@ -36,6 +36,7 @@
       axis: "y",
       handle: ".handle",
       containment: "document", 
+      tolerance: "pointer",
       stop: function( event, ui ) {
         htmlToList();   
         editedPlaylist();
@@ -77,10 +78,19 @@
     });
 
     $(".addSong").click( function() {
+        addSong();
+    });
+
+    $(".searchBox").submit(function (e){
+        e.preventDefault();
+        addSong(); 
+    });
+    
+    function addSong() {
       socket.emit("add_song_to_start",{q: $(".searchbar input").val()}); 
       $(".searchbar input").val("");
       $(".searchbar").hide();
-    });
+    }
 
 		function editedPlaylist() {
 			socket.emit("update_playlist", currentPlaylist);

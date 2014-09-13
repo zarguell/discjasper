@@ -106,6 +106,12 @@ body {
   cursor: pointer;
   white-space: nowrap;
   overflow: hidden; }
+  #plist li.ui-sortable-helper {
+    box-shadow: 5px 5px 5px black;
+    background: #c9d2d7;
+    text-shadow: none; }
+    #plist li.ui-sortable-helper .trash:after {
+      background: #c9d2d7; }
   #plist li .data {
     display: none; }
   #plist li .title {
