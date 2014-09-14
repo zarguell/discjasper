@@ -47,6 +47,13 @@ io.sockets.on('connection', function (socket) {
     });
   });
 
+  socket.on('add_song_to_end', function(data) {
+    ytSearch(data.q, function (r) {
+      requested_list.push(r);
+      sendLoadPlaylist();
+    });
+  });
+
   socket.on('update_playlist', function(data) {
     if (requested_list.length > 0) {
       requested_list = data; 

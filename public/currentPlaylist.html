@@ -87,7 +87,7 @@
     });
     
     function addSong() {
-      socket.emit("add_song_to_start",{q: $(".searchbar input").val()}); 
+      socket.emit("add_song_to_end",{q: $(".searchbar input").val()}); 
       $(".searchbar input").val("");
       $(".searchbar").hide();
     }
