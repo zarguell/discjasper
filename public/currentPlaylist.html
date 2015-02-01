@@ -1,15 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
-	<head>
-		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-		<meta charset="utf-8">
-		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width; initial-scale=1.0, maximum-scale=1, user-scalable=0">
-		<title>Current Playlist</title>
-		<link href="main.css" rel="stylesheet"/>
-	</head>
-	
-	<body>
+    <title>Current Playlist</title>
+    <link href="main.css" rel="stylesheet"/>
+  </head>
+
+  <body>
     <div class="searchbar" style="display:none;">
       <div class="addSong icon"></div>
       <form class="searchBox">
@@ -21,105 +21,103 @@
       <div class="skipSong icon"></div>
       <div class="currentSongName"></div>
     </div>
-		<div id="plist">
-		</div>
-		
-	<script src="https://cdn.socket.io/socket.io-1.0.6.js"></script>
-	<script src="http://code.jquery.com/jquery-2.0.0.js"></script>
-  <script src="/jquery-ui.min.js"></script>
-  <script src="/jquery.ui.touch-punch.min.js"></script>
-	<script>
-		var socket = io.connect("http://"+location.hostname+":"+location.port);
-		var currentPlaylist = []; 
-		
-    $("#plist").sortable({
-      axis: "y",
-      handle: ".handle",
-      containment: "document", 
-      tolerance: "pointer",
-      stop: function( event, ui ) {
-        htmlToList();   
+    <div id="plist">
+    </div>
+
+    <script src="https://cdn.socket.io/socket.io-1.0.6.js"></script>
+    <script src="http://code.jquery.com/jquery-2.0.0.js"></script>
+    <script src="/jquery-ui.min.js"></script>
+    <script src="/jquery.ui.touch-punch.min.js"></script>
+    <script>
+      var socket = io.connect("http://"+location.hostname+":"+location.port);
+      var currentPlaylist = []; 
+
+      $("#plist").sortable({
+        axis: "y",
+        handle: ".handle",
+        containment: "document", 
+        tolerance: "pointer",
+        stop: function( event, ui ) {
+          htmlToList();   
+          editedPlaylist();
+        }
+      });
+
+      $("#plist").on("click",".trash", function(e) {
+        $(this).parent().remove();
+        htmlToList();
         editedPlaylist();
-      }
-    });
+      });
 
-    $("#plist").on("click",".trash", function(e) {
-      $(this).parent().remove();
-      htmlToList();
-      editedPlaylist();
-    });
+      socket.on('connect', function () {
+        console.log("connected to server");
+      });
 
-		socket.on('connect', function () {
-			console.log("connected to server");
-		});
+      socket.emit("load_playlist",{});
+      socket.on('load_playlist', function(obj) {
+        currentPlaylist = obj;
+        addWholePlToList();
+      });
 
-    socket.emit("load_playlist",{});
-		socket.on('load_playlist', function(obj) {
-			currentPlaylist = obj;
-			addWholePlToList();
-		});
+      socket.emit("current_song",{});
+      socket.on('current_song', function(obj) {
+        updateSongInfo(obj);
+      });
 
-    socket.emit("current_song",{});
-		socket.on('current_song', function(obj) {
-      updateSongInfo(obj);
-		});
+      socket.on('next_song', function(obj) {
+        updateSongInfo(obj);
+      });
 
-    socket.on('next_song', function(obj) {
-      updateSongInfo(obj);
-    });
+      $(".skipSong").click( function () {
+        socket.emit("next_song",{});
+      });
 
-    $(".skipSong").click( function () {
-      socket.emit("next_song",{});
-    });
+      $(".searchSong").click( function() {
+        $(".searchbar").toggle();
+        $(".searchbar input").focus();
+      });
 
-    $(".searchSong").click( function() {
-      $(".searchbar").toggle();
-      $(".searchbar input").focus();
-    });
-
-    $(".addSong").click( function() {
+      $(".addSong").click( function() {
         addSong();
-    });
+      });
 
-    $(".searchBox").submit(function (e){
+      $(".searchBox").submit(function (e){
         e.preventDefault();
         addSong(); 
-    });
-    
-    function addSong() {
-      socket.emit("add_song_to_end",{q: $(".searchbar input").val()}); 
-      $(".searchbar input").val("");
-      $(".searchbar").hide();
-    }
-
-		function editedPlaylist() {
-			socket.emit("update_playlist", currentPlaylist);
-		}
-
-    function htmlToList() {
-      var newList = [];
-      $("#plist li:not(.ui-sortable-placeholder)").each( function() {
-        newList.push(JSON.parse($(this).find(".data").html()));
       });
-      currentPlaylist = newList;
-    }
 
-    function updateSongInfo(obj) {
-      $(".currentSongName").html(obj.title);
-    }
-		
-		function addWholePlToList() {
-      $("#plist").html("");
-			for(var i = 0; i < currentPlaylist.length; i++) {
-        var h = '<li class="pitem"><div class="handle icon"></div><span class="title">' + currentPlaylist[i].title + '</span>' +  
-          '<div class="data">' + JSON.stringify(currentPlaylist[i])  + '</div><div class="trash icon"></div></li>';
-        $("#plist").append(h);
-			}
-		}
+      function addSong() {
+        socket.emit("add_song_to_end",{q: $(".searchbar input").val()}); 
+        $(".searchbar input").val("");
+        $(".searchbar").hide();
+      }
 
-	
-	</script>
-	</body>
+      function editedPlaylist() {
+        socket.emit("update_playlist", currentPlaylist);
+      }
+
+      function htmlToList() {
+        var newList = [];
+        $("#plist li:not(.ui-sortable-placeholder)").each( function() {
+          newList.push(JSON.parse($(this).find(".data").html()));
+        });
+        currentPlaylist = newList;
+      }
+
+      function updateSongInfo(obj) {
+        $(".currentSongName").html(obj.title);
+      }
+
+      function addWholePlToList() {
+        $("#plist").html("");
+        for(var i = 0; i < currentPlaylist.length; i++) {
+          var h = '<li class="pitem"><div class="handle icon"></div><span class="title">' + currentPlaylist[i].title + '</span>' +  
+            '<div class="data">' + JSON.stringify(currentPlaylist[i])  + '</div><div class="trash icon"></div></li>';
+          $("#plist").append(h);
+        }
+      }
+    </script>
+  </body>
 </html>
 
-	
+
