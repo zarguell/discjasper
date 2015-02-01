@@ -46,7 +46,7 @@ body.player {
       border: 0; }
   .searchbar .addSong:after {
     box-sizing: border-box;
-    content: "\f0fe";
+    content: "\f067";
     background: #89CC4A;
     padding: 7px 0 0 12px;
     position: absolute;
@@ -71,7 +71,7 @@ body.player {
     border-right: 1px solid black; }
   .toolbar .searchSong:after {
     box-sizing: border-box;
-    content: "\f00e";
+    content: "\f002";
     background: #89CC4A;
     padding: 7px 0 0 8px;
     float: left;
