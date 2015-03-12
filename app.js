@@ -2,7 +2,7 @@ var express = require('express');
 var app = express();
 var server = app.listen(5000);
 
-var config = require('./config2')
+var config = require('./config')
 exports.config = config;
 var io = require('socket.io').listen(server);
 exports.io = io;
