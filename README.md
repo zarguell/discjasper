@@ -11,7 +11,7 @@ Download the files with:
     git clone https://github.com/middleinitial/discjasper
     cd discjasper
 
-initialize the config.js file(twitter api keys required)
+initialize the config.js file (twitter api keys required)
 
 then run
 
@@ -19,7 +19,7 @@ then run
     node app.js
 
 open your browser to 
-localhost:3000
+localhost:5000
 
 for the control panel open your browser to
-http://localhost:3000/currentPlaylist.html
+http://localhost:5000/currentPlaylist.html
