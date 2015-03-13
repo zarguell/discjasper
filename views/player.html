@@ -4,7 +4,7 @@
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <title>DiscJasper for Music</title>
+    <title>Clique Play > Music Player</title>
     <link href="main.css" rel="stylesheet"/>
   </head>
   <body class="player">
@@ -39,6 +39,12 @@
       socket.on('disconnect', function () {
         console.log("disconnected from server") 
         clearTimeout(videoTime);
+      });
+
+      // Only the player responds to the player_check
+      // If no player found next client is nominated
+      socket.on('player_marco', function () {
+        socket.emit("player_polo",{});
       });
 
     </script>

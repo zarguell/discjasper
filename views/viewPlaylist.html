@@ -5,7 +5,7 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width; initial-scale=1.0, maximum-scale=1, user-scalable=0">
-    <title>Current Playlist</title>
+    <title>Clique Play > Playlist</title>
     <link href="main.css" rel="stylesheet"/>
   </head>
 
@@ -18,7 +18,6 @@
     </div>
     <div class="toolbar">
       <div class="searchSong icon"></div>
-      <div class="skipSong icon"></div>
       <div class="currentSongName"></div>
     </div>
     <div id="plist">
@@ -27,27 +26,9 @@
     <script src="https://cdn.socket.io/socket.io-1.0.6.js"></script>
     <script src="http://code.jquery.com/jquery-2.0.0.js"></script>
     <script src="/jquery-ui.min.js"></script>
-    <script src="/jquery.ui.touch-punch.min.js"></script>
     <script>
       var socket = io.connect("http://"+location.hostname+":"+location.port);
       var currentPlaylist = []; 
-
-      $("#plist").sortable({
-        axis: "y",
-        handle: ".handle",
-        containment: "document", 
-        tolerance: "pointer",
-        stop: function( event, ui ) {
-          htmlToList();   
-          editedPlaylist();
-        }
-      });
-
-      $("#plist").on("click",".trash", function(e) {
-        $(this).parent().remove();
-        htmlToList();
-        editedPlaylist();
-      });
 
       socket.on('connect', function () {
         console.log("connected to server");
@@ -111,8 +92,8 @@
       function addWholePlToList() {
         $("#plist").html("");
         for(var i = 0; i < currentPlaylist.length; i++) {
-          var h = '<li class="pitem"><div class="handle icon"></div><span class="title">' + currentPlaylist[i].title + '</span>' +  
-            '<div class="data">' + JSON.stringify(currentPlaylist[i])  + '</div><div class="trash icon"></div></li>';
+          var h = '<li class="pitem no-icon"><span class="title">' + currentPlaylist[i].title + '</span>' +  
+            '<div class="data">' + JSON.stringify(currentPlaylist[i])  + '</div></li>';
           $("#plist").append(h);
         }
       }

@@ -24,6 +24,8 @@ exports.twitter = twitter;
 var current_song;
 var requested_list = [];
 var default_list = [{id: "GVFWai1jVfs", time: "43", title: "30 Second Bunnies: Terminator"}];
+var player = false;
+
 billboard.top100(function (r) {
   default_list.push(r);
   sendLoadPlaylist();
@@ -40,25 +42,20 @@ app.use(express.static(__dirname + '/public'));
 app.set("view options", {layout: false});
 
 app.get('/', function(req, res) {
-  res.render('index.html');
+  res.sendfile(__dirname + '/views/viewPlaylist.html');
 });
 
-/*
-{
-  "attachments": [],
-  "avatar_url": "http://i.groupme.com/123456789",
-  "created_at": 1302623328,
-  "group_id": "1234567890",
-  "id": "1234567890",
-  "name": "John",
-  "sender_id": "12345",
-  "sender_type": "user",
-  "source_guid": "GUID",
-  "system": false,
-  "text": "Hello world ☃☃",
-  "user_id": "1234567890"
-}
-*/
+app.get('/player', function(req, res) {
+  // if we already have a player do not load another
+  if (player)
+    res.sendfile(__dirname + '/views/viewPlaylist.html');
+  else
+    res.sendfile(__dirname + '/views/player.html');
+})
+
+app.get('/admin', function(req, res) {
+  res.sendfile(__dirname + '/views/controlPlaylist.html');
+});
 
 app.post('/groupme', function(req, res) {
   youtube.search(req.body.text, function (r) {
@@ -79,9 +76,24 @@ app.all('*', function(req, res, next) {
 
 //Connection to the browser
 io.sockets.on('connection', function (socket) {
+  console.log("a client connected")
+
+  // Send the player check
+  socket.emit("player_marco",{});
+  socket.on("player_polo", function(data) {
+    console.log("we have a player");
+    player = true; 
+  });
 
   socket.on('disconnect', function (socket) {
-    console.log("disconnected a client");
+    console.log("a client left");
+    // Expect that the player was closed and only
+    // admit that we have a player if we here a polo
+    player = false;
+
+    // Send out the call to all open sockets checking
+    // for a player
+    io.sockets.emit("player_marco",{});
   });
 
   socket.on('next_song', function (data) {

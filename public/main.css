@@ -110,6 +110,8 @@ body.player {
   cursor: pointer;
   white-space: nowrap;
   overflow: hidden; }
+  #plist li.no-icon {
+    padding-left: 5px; }
   #plist li.ui-sortable-helper {
     box-shadow: 5px 5px 5px black;
     background: #c9d2d7;
