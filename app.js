@@ -53,6 +53,10 @@ app.get('/player', function(req, res) {
     res.sendfile(__dirname + '/views/player.html');
 })
 
+app.get('/clone', function(req, res) {
+  res.sendfile(__dirname + '/views/clone.html');
+});
+
 app.get('/admin', function(req, res) {
   res.sendfile(__dirname + '/views/controlPlaylist.html');
 });
