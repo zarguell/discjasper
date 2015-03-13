@@ -19,7 +19,14 @@ then run
     node app.js
 
 open your browser to 
-localhost:5000
+    localhost:5000/player
+this must remain open to play music
 
-for the control panel open your browser to
-http://localhost:5000/currentPlaylist.html
+to view the passive playlist
+    localhost:5000/
+
+to view the active playlist
+    localhost:5000/admin
+
+to view a slave version of the video player
+    localhost:5000/clone
