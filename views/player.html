@@ -8,12 +8,52 @@
     <link href="main.css" rel="stylesheet"/>
   </head>
   <body class="player">
-    <div class="yt"></div>
+    <div class="slide videoClick transparent">
+      <div class="aspect-ratio">
+        <div id="myplayer"></div>
+      </div>
+    </div>
+
     <script src="https://cdn.socket.io/socket.io-1.0.6.js"></script>
     <script src="http://code.jquery.com/jquery-1.11.1.js"></script>
     <script>
       var socket = io.connect("http://"+location.hostname+":"+location.port);
       var videoTime;
+
+
+      var tag = document.createElement('script');
+      tag.src = "https://www.youtube.com/iframe_api";
+      var firstScriptTag = document.getElementsByTagName('script')[0];
+      firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+
+      var player;
+      function onYouTubeIframeAPIReady() {
+        player = new YT.Player('myplayer', {
+        height: '390',
+        width: '640',
+        videoId: 'lo63Llp0dag',
+        playerVars: { 'controls': 0, 'showinfo': 0 }
+        });
+      }
+
+
+      function play() {
+        if (ytplayer) {
+          ytplayer.playVideo();
+        }
+      }
+
+      function pause() {
+        if (ytplayer) {
+          ytplayer.pauseVideo();
+        }
+
+      }
+
+      function onYouTubePlayerReady(playerId) {
+        ytplayer = document.getElementById("myytplayer");
+      }
+
 
       socket.on('connect', function () {
         console.log("connected to server");
