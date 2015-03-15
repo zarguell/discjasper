@@ -101,7 +101,15 @@ io.sockets.on('connection', function (socket) {
   });
 
   socket.on('next_song', function (data) {
-    playNext();
+    sendPlayNext();
+  });
+
+  socket.on('stop_song', function (data) {
+    sendStopSong(data);
+  });
+
+  socket.on('play_song', function (data) {
+    sendPlaySong(data);
   });
 
   socket.on('load_playlist', function(data) {
@@ -137,7 +145,7 @@ io.sockets.on('connection', function (socket) {
 
 });
 
-function playNext() {
+function sendPlayNext() {
   if (requested_list.length > 0) {
     sendRequested();
   } else {
@@ -160,6 +168,14 @@ function sendDefault() {
 function sendRequested() {
   current_song = requested_list.shift();
   io.sockets.emit('next_song', current_song);
+}
+
+function sendStopSong(data) {
+  io.sockets.emit('stop_song', data);
+}
+
+function sendPlaySong(data) {
+  io.sockets.emit('play_song', data);
 }
 
 function activePlaylist() {

@@ -18,6 +18,7 @@
     </div>
     <div class="toolbar">
       <div class="searchSong icon"></div>
+      <div id="playPause" class="stopSong icon"></div>
       <div class="skipSong icon"></div>
       <div class="currentSongName"></div>
     </div>
@@ -53,6 +54,14 @@
         console.log("connected to server");
       });
 
+      socket.on('stop_song', function() {
+        playIcon();
+      });
+
+      socket.on('play_song', function() {
+        stopIcon();
+      });
+
       socket.emit("load_playlist",{});
       socket.on('load_playlist', function(obj) {
         currentPlaylist = obj;
@@ -81,6 +90,10 @@
         addSong();
       });
 
+      $(".toolbar").on("click",".stopSong, .playSong", function(e) {
+        toggleSongPlaying();
+      });
+
       $(".searchBox").submit(function (e){
         e.preventDefault();
         addSong(); 
@@ -90,6 +103,14 @@
         socket.emit("add_song_to_end",{q: $(".searchbar input").val()}); 
         $(".searchbar input").val("");
         $(".searchbar").hide();
+      }
+
+      function toggleSongPlaying() {
+        if ($("#playPause").hasClass("stopSong")) {
+          socket.emit("stop_song",{"from": "admin"}); 
+        } else {
+          socket.emit("play_song",{"from": "admin"}); 
+        }
       }
 
       function editedPlaylist() {
@@ -104,8 +125,17 @@
         currentPlaylist = newList;
       }
 
+      function playIcon() {
+        $("#playPause").removeClass("stopSong").addClass("playSong");
+      }
+      
+      function stopIcon() {
+        $("#playPause").removeClass("playSong").addClass("stopSong");
+      }
+
       function updateSongInfo(obj) {
-        $(".currentSongName").html(obj.title);
+        if (obj) $(".currentSongName").html(obj.title);
+        else $(".currentSongName").html("Waiting for player...");
       }
 
       function addWholePlToList() {

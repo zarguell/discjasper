@@ -21,10 +21,10 @@ body.player {
 
 .yt {
   position: absolute;
-  top: -10px;
+  top: 0px;
   right: 0;
   left: 0;
-  bottom: -35px;
+  bottom: 0px;
   overflow: hidden; }
 
 .icon {
@@ -74,6 +74,28 @@ body.player {
     content: "\f002";
     background: #89CC4A;
     padding: 7px 0 0 8px;
+    float: left;
+    width: 45px;
+    height: 45px;
+    font-size: 28px;
+    cursor: pointer;
+    border-right: 1px solid black; }
+  .toolbar .stopSong:after {
+    box-sizing: border-box;
+    content: "\f04c";
+    background: yellow;
+    padding: 8px 0 0 10px;
+    float: left;
+    width: 45px;
+    height: 45px;
+    font-size: 28px;
+    cursor: pointer;
+    border-right: 1px solid black; }
+  .toolbar .playSong:after {
+    box-sizing: border-box;
+    background: yellow;
+    content: "\f04b";
+    padding: 8px 0 0 10px;
     float: left;
     width: 45px;
     height: 45px;
