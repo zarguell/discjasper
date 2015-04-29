@@ -1,18 +1,10 @@
 var http = require('./app').http;
-var FeedParser = require('./app').FeedParser;
+var request = require("request");
 
 exports.search = function(songName, dataFun) {
   songName = songName.split(" ").join("+");
-  http.get('http://gdata.youtube.com/feeds/api/videos?q=' + songName  + '&max-results=1&v=2', function (res) {
-    res.pipe(new FeedParser({})).on('readable', function(){
-      var stream = this, item;
-      while (item = stream.read()){
-        var vID = item.guid.substr(item.guid.lastIndexOf(":") + 1);
-        var vTime = item['media:group']['yt:duration']['@'].seconds;
-        var vTitle = item['media:group']['media:title']['#'];
-        var val = ({id: vID, time: vTime, title:vTitle});
-        dataFun(val);
-      }
-    });
+  request("https://www.googleapis.com/youtube/v3/search?part=snippet&q=" + songName + "&type=video&key=AIzaSyC7RtiPFhHG00A-MPTpL71G6cNy4D5TRfQ", function(error, response, body) {
+    var data = JSON.parse(body);
+    dataFun({id: data["items"][0]["id"]["videoId"],  title: data["items"][0]["snippet"]["title"]});
   });
 }

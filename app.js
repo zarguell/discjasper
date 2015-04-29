@@ -23,7 +23,7 @@ exports.twitter = twitter;
 // Starting with no requests and bunny default, over
 var current_song;
 var requested_list = [];
-var default_list = [{id: "GVFWai1jVfs", time: "43", title: "30 Second Bunnies: Terminator"}];
+var default_list = [{id: "GVFWai1jVfs", title: "30 Second Bunnies: Terminator"}];
 var player = false;
 
 billboard.top100(function (r) {

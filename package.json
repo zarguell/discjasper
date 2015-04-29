@@ -8,6 +8,7 @@
     "socket.io": "1.0.6",
     "twit": "1.1.13",
     "feedparser":"0.16.3",
+    "request": "2.55.0",
     "nodemon": "1.2.1"
   }
 }
