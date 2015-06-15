@@ -27,7 +27,9 @@
     <script src="http://code.jquery.com/jquery-2.0.0.js"></script>
     <script src="/jquery-ui.min.js"></script>
     <script>
-      var socket = io.connect("http://"+location.hostname+":"+location.port);
+      var twitter = window.location.pathname;
+      var socket = io.connect(twitter);
+
       var currentPlaylist = []; 
 
       socket.on('connect', function () {
@@ -38,6 +40,10 @@
       socket.on('load_playlist', function(obj) {
         currentPlaylist = obj;
         addWholePlToList();
+      });
+
+      socket.on('player_marco', function () {
+        console.log("heard a marco, ignoring");
       });
 
       socket.emit("current_song",{});

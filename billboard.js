@@ -11,7 +11,7 @@ exports.top100 = function(handler) {
       var stream = this, item;
       while (item = stream.read()){
         var songName = item["rss:chart_item_title"]["#"] + " " + item["rss:artist"]["#"];
-        youtube.search(songName, handler)
+        youtube.search(songName, "/frisbeehouse", handler)
       }
     });
   });
