@@ -1,110 +1,241 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <title>Clique Play > Music Player</title>
-    <link href="main.css" rel="stylesheet"/>
-  </head>
-  <body class="player">
-    <div class="yt" id="player"></div>
-    <script src="https://cdn.socket.io/socket.io-1.0.6.js"></script>
-    <script src="http://code.jquery.com/jquery-1.11.1.js"></script>
-    <script>
-      var twitter = window.location.pathname;
-      var socket = io.connect("localhost:5000");
-      var player;
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>Clique Play > Music Player</title>
+  <link href="main.css" rel="stylesheet"/>
+</head>
+<body class="player">
+  <div class="yt" id="player"></div>
+  <div class="playlist">
+    <div class="searchbar" style="display:none;">
+      <div class="addSong icon"></div>
+      <form class="searchBox">
+        <input placeholder="Enter song name and artist" type="text"/>
+      </form>
+    </div>
+    <div class="toolbar">
+      <div class="searchSong icon"></div>
+      <div id="playPause" class="stopSong icon"></div>
+      <div class="skipSong icon"></div>
+      <div class="currentSongName"></div>
+    </div>
+    <div id="plist">
+    </div>
+  </div>
+  <script src="https://cdn.socket.io/socket.io-1.0.6.js"></script>
+  <script src="http://code.jquery.com/jquery-1.11.1.js"></script>
+  <script src="/jquery-ui.min.js"></script>
+  <script src="/jquery.ui.touch-punch.min.js"></script>
+  <script>
+  var twitter = window.location.pathname;
+  var socket = io.connect("localhost:5000");
+  var player;
+
+  socket.on('connect', function () {
+    console.log("connected to server");
+    socket.emit("USE", twitter);
+    findNext();
+  });
+
+  function findNext() {
+    socket.emit("next_song",{});
+    console.log("requesting new song");
+  }
+
+  function playVideo(obj) {
+    if (player) player.loadVideoById(obj.id, 0, "large");
+    console.log("player" +obj.id);
+  }
+
+  socket.on('next_song', function(obj) {
+    console.log("got new song");
+    playVideo(obj);
+  });
+
+  socket.on('stop_song', function(obj) {
+    stopPlayer();
+  });
+
+  socket.on('play_song', function(obj) {
+    playPlayer();
+  });
+
+  socket.on('disconnect', function () {
+    console.log("disconnected from server")
+  });
+
+  // Only the player responds to the player_check
+  // If no player found next client is nominated
+  socket.on('player_marco', function () {
+    console.log("heard a marco, responding with a polo");
+    socket.emit("player_polo",{});
+  });
+
+  var tag = document.createElement('script');
+  tag.src = "https://www.youtube.com/iframe_api";
+  var firstScriptTag = document.getElementsByTagName('script')[0];
+  firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+
+  function onYouTubeIframeAPIReady() {
+    player = new YT.Player('player', {
+      height: '100%',
+      width: '100%',
+      videoId: "lO45DNkBMi4", // loading animation video
+      events: {
+        'onReady': onPlayerReady,
+        'onStateChange': onPlayerStateChange
+      }
+    });
+  }
+
+  // 4. The API will call this function when the video player is ready.
+  function onPlayerReady(event) {
+    event.target.playVideo();
+  }
+
+  // 5. The API calls this function when the player's state changes.
+  //    The function indicates that when playing a video (state=1),
+  //    the player should play for six seconds and then stop.
+  var ignore = false;
+  function onPlayerStateChange(event) {
+    if (event.data == YT.PlayerState.PLAYING) {
+      socket.emit("play_song",{"from":"video"});
+    }
+
+    if (event.data == YT.PlayerState.PAUSED) {
+      socket.emit("stop_song",{"from":"video"});
+    }
+
+    if (event.data == YT.PlayerState.ENDED) {
+      console.log("video finished playing");
+      findNext();
+    }
+  }
+
+  function stopPlayer() {
+    if(player) player.pauseVideo();
+  }
+
+  function playPlayer() {
+    if(player) player.playVideo();
+  }
+
+      $("#plist").sortable({
+        axis: "y",
+        handle: ".handle",
+        containment: "document",
+        tolerance: "pointer",
+        stop: function( event, ui ) {
+          htmlToList();
+          editedPlaylist();
+        }
+      });
+
+      $("#plist").on("click",".trash", function(e) {
+        $(this).parent().remove();
+        htmlToList();
+        editedPlaylist();
+      });
 
       socket.on('connect', function () {
         console.log("connected to server");
-        socket.emit("USE", twitter); 
-        findNext();
       });
 
-      function findNext() {
-        socket.emit("next_song",{});
-        console.log("requesting new song");
-      }
+      socket.on('stop_song', function() {
+        playIcon();
+      });
 
-      function playVideo(obj) {
-        if (player) player.loadVideoById(obj.id, 0, "large");
-        console.log("player" +obj.id);
-      }
+      socket.on('play_song', function() {
+        stopIcon();
+      });
+
+      socket.emit("load_playlist",{});
+      socket.on('load_playlist', function(obj) {
+        currentPlaylist = obj;
+        addWholePlToList();
+      });
+
+      socket.emit("current_song",{});
+      socket.on('current_song', function(obj) {
+        updateSongInfo(obj);
+      });
 
       socket.on('next_song', function(obj) {
-        console.log("got new song");
-        playVideo(obj);
+        updateSongInfo(obj);
       });
 
-      socket.on('stop_song', function(obj) {
-        stopPlayer();
+      $(".skipSong").click( function () {
+        socket.emit("next_song",{});
       });
 
-      socket.on('play_song', function(obj) {
-        playPlayer();
+      $(".searchSong").click( function() {
+        $(".searchbar").toggle();
+        $(".searchbar input").focus();
       });
 
-      socket.on('disconnect', function () {
-        console.log("disconnected from server") 
+      $(".addSong").click( function() {
+        addSong();
       });
 
-      // Only the player responds to the player_check
-      // If no player found next client is nominated
-      socket.on('player_marco', function () {
-        console.log("heard a marco, responding with a polo");
-        socket.emit("player_polo",{});
+      $(".toolbar").on("click",".stopSong, .playSong", function(e) {
+        toggleSongPlaying();
       });
 
-      var tag = document.createElement('script');
-      tag.src = "https://www.youtube.com/iframe_api";
-      var firstScriptTag = document.getElementsByTagName('script')[0];
-      firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+      $(".searchBox").submit(function (e){
+        e.preventDefault();
+        addSong();
+      });
 
-      function onYouTubeIframeAPIReady() {
-        player = new YT.Player('player', {
-          height: '100%',
-          width: '100%',
-          videoId: "lO45DNkBMi4", // loading animation video
-          events: {
-            'onReady': onPlayerReady,
-            'onStateChange': onPlayerStateChange
-          }
-        });
+      function addSong() {
+        socket.emit("add_song_to_end",{q: $(".searchbar input").val(), room: twitter});
+        $(".searchbar input").val("");
+        $(".searchbar").hide();
       }
 
-      // 4. The API will call this function when the video player is ready.
-      function onPlayerReady(event) {
-        event.target.playVideo();
-      }
-
-      // 5. The API calls this function when the player's state changes.
-      //    The function indicates that when playing a video (state=1),
-      //    the player should play for six seconds and then stop.
-      var ignore = false;
-      function onPlayerStateChange(event) {
-        if (event.data == YT.PlayerState.PLAYING) {
-          socket.emit("play_song",{"from":"video"}); 
-        } 
-
-        if (event.data == YT.PlayerState.PAUSED) {
-          socket.emit("stop_song",{"from":"video"}); 
-        } 
-
-        if (event.data == YT.PlayerState.ENDED) {
-          console.log("video finished playing");
-          findNext();
+      function toggleSongPlaying() {
+        if ($("#playPause").hasClass("stopSong")) {
+          socket.emit("stop_song",{"from": "admin"});
+        } else {
+          socket.emit("play_song",{"from": "admin"});
         }
       }
 
-      function stopPlayer() {
-        if(player) player.pauseVideo();
+      function editedPlaylist() {
+        socket.emit("update_playlist", {room: twitter, playlist: currentPlaylist});
       }
 
-      function playPlayer() {
-        if(player) player.playVideo();
+      function htmlToList() {
+        var newList = [];
+        $("#plist li:not(.ui-sortable-placeholder)").each( function() {
+          newList.push(JSON.parse($(this).find(".data").html()));
+        });
+        currentPlaylist = newList;
       }
 
-    </script>
-  </body>
+      function playIcon() {
+        $("#playPause").removeClass("stopSong").addClass("playSong");
+      }
+
+      function stopIcon() {
+        $("#playPause").removeClass("playSong").addClass("stopSong");
+      }
+
+      function updateSongInfo(obj) {
+        if (obj) $(".currentSongName").html(obj.title);
+        else $(".currentSongName").html("Waiting for player...");
+      }
+
+      function addWholePlToList() {
+        $("#plist").html("");
+        for(var i = 0; i < currentPlaylist.length; i++) {
+          var h = '<li class="pitem"><div class="handle icon"></div><span class="title">' + currentPlaylist[i].title + '</span>' +
+            '<div class="data">' + JSON.stringify(currentPlaylist[i])  + '</div><div class="trash icon"></div></li>';
+          $("#plist").append(h);
+        }
+      }
+  </script>
+</body>
 </html>

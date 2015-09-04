@@ -93,27 +93,20 @@ io.sockets.on('connection', function (socket){
     io.sockets.in(socket.room).emit('current_song', current_song);
   });
 
-  socket.on('add_song_to_start', function(data) {
-    youtube.search(data.q, function (r) {
-      requested_hash[room].unshift(r);
-      sendLoadPlaylist(socket.room);
-    });
-  });
-
   socket.on('add_song_to_end', function(data) {
-    youtube.search(data.q, function (r) {
+    youtube.search(data.q, data.room, function (room, r) {
       requested_hash[room].push(r);
       sendLoadPlaylist(socket.room);
     });
   });
 
   socket.on('update_playlist', function(data) {
-    if (requested_hash[room].length > 0) {
-      requested_hash[room]= data;
+    if (requested_hash[data.room].length > 0) {
+      requested_hash[data.room]= data.playlist;
     } else {
-      default_list = data;
+      default_list = data.playlist;
     }
-    sendLoadPlaylist(socket.room);
+    sendLoadPlaylist(data.room);
   });
 
 });

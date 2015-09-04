@@ -22,10 +22,18 @@ body.player {
 .yt {
   position: absolute;
   top: 0px;
-  right: 0;
   left: 0;
   bottom: 0px;
+  width: 50%;
   overflow: hidden; }
+
+.playlist {
+  width: 50%;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  background: blue; }
 
 .icon {
   font-family: "FontAwesome";
@@ -163,3 +171,5 @@ body.player {
     top: 10px;
     right: 5px;
     background: #e0eff9; }
+
+/*# sourceMappingURL=main.css.map */
