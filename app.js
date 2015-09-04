@@ -2,7 +2,7 @@ var express = require('express');
 var app = express();
 var server = app.listen(5000);
 
-var config = require('./config')
+var config = require('./config');
 exports.config = config;
 var io = require('socket.io').listen(server);
 exports.io = io;
@@ -20,8 +20,8 @@ var Twit = require('twit');
 var T = new Twit({
     consumer_key: config.twitter_api_key,
     consumer_secret: config.twitter_api_secret,
-    access_token: config.twitter_access_token,        
-    access_token_secret: config.twitter_access_token_secret 
+    access_token: config.twitter_access_token,
+    access_token_secret: config.twitter_access_token_secret
 });
 
 // Starting with no requests and bunny default, over
@@ -59,7 +59,7 @@ io.sockets.on('connection', function (socket){
 
   socket.on("player_polo", function(data) {
     console.log("we have a player");
-    player = true; 
+    player = true;
   });
 
   socket.on('disconnect', function () {
@@ -109,15 +109,22 @@ io.sockets.on('connection', function (socket){
 
   socket.on('update_playlist', function(data) {
     if (requested_hash[room].length > 0) {
-      requested_hash[room]= data; 
+      requested_hash[room]= data;
     } else {
-      default_list = data; 
+      default_list = data;
     }
     sendLoadPlaylist(socket.room);
   });
 
 });
 
+app.get('/', function(req, res) {
+  res.sendfile(__dirname + "/views/index.html");
+});
+
+app.post('/start', function(req, res) {
+  res.redirect("/" + req.param('twitter'))
+});
 
 app.get('/:handle', function (req, res) {
   var handle = req.params.handle;
@@ -165,8 +172,8 @@ function sendPlayNext(room) {
 }
 
 
-function sendLoadPlaylist(twitter) {
-  io.sockets.in(twitter).emit('load_playlist', activePlaylist(twitter));    
+function sendLoadPlaylist(room) {
+  io.sockets.in(room).emit('load_playlist', activePlaylist(room));
 }
 
 function sendDefault(room) {
@@ -199,7 +206,7 @@ function activePlaylist(room) {
 }
 
 function addToRequestedList(room, r) {
-  requested_hash.push(r);
-  sendLoadPlaylist();
+  requested_hash[room].push(r);
+  sendLoadPlaylist(room);
 }
 exports.addToRequestedList = addToRequestedList;
