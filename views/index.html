@@ -2,11 +2,23 @@
 <head>
   <meta charset="UTF-8">
   <title>Cea</title>
+  <link href="main.css" rel="stylesheet"/>
 </head>
 <body>
-  <form method="POST" action="/start">
-    <input type="text" name="twitter"/>
-    <input type="submit"/>
-  </form>
+  <div class="screen">
+    <div class="large-image"></div>
+    <form class="twitter-form" method="POST" action="/start">
+      <h1>Start Your Party</h1>
+      <em>Enter a twitter username and anybody who tweets a song will be added to the party playlist.</em>
+      <input type="text" name="twitter" placeholder="Enter your twitter handle"/><input value="Start" type="submit"/>
+    </form>
+  </div>
+</div>
+<script src="http://code.jquery.com/jquery-2.0.0.js"></script>
+<script type="text/javascript">
+  $(document).ready( function () {
+    $('input[type="text"]').focus();
+  })
+</script>
 </body>
 </html>
