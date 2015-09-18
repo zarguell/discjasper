@@ -24,16 +24,14 @@ var T = new Twit({
     access_token_secret: config.twitter_access_token_secret
 });
 
-// Starting with no requests and bunny default, over
+// Starting with no requests and an empty default list
 var current_song;
 var requested_hash = {};
-var default_list = [{id: "GVFWai1jVfs", title: "30 Second Bunnies: Terminator"}];
-var player = false;
+var default_list = [];
 
 billboard.top100(function (r,b) {
   default_list.push(b);
   console.log("adding", b);
-  //sendLoadPlaylist();
 });
 
 console.log('app started on port ' + server.address().port);
@@ -46,7 +44,6 @@ app.use(express.static(__dirname + '/public'));
 
 app.set("view options", {layout: false});
 
-
 var io = require('socket.io').listen(server);
 io.sockets.on('connection', function (socket){
   console.log("has connection");
@@ -54,35 +51,22 @@ io.sockets.on('connection', function (socket){
     console.log(twitter);
     socket.join(twitter);
     socket.room = twitter;
-    io.sockets.in(twitter).emit('player_marco',{});
-  });
-
-  socket.on("player_polo", function(data) {
-    console.log("we have a player");
-    player = true;
   });
 
   socket.on('disconnect', function () {
     console.log("a client left");
-    // Expect that the player was closed and only
-    // admit that we have a player if we here a polo
-    player = false;
-
-    // Send out the call to all open sockets checking
-    // for a player
-    io.sockets.in(socket.room).emit("player_marco",{});
   });
 
-  socket.on('next_song', function (data) {
+  socket.on('next_song', function () {
     sendPlayNext(socket.room);
   });
 
-  socket.on('stop_song', function (data) {
-    sendStopSong(socket.room, data);
+  socket.on('stop_song', function () {
+    sendStopSong(socket.room);
   });
 
-  socket.on('play_song', function (data) {
-    sendPlaySong(socket.room, data);
+  socket.on('play_song', function () {
+    sendPlaySong(socket.room);
   });
 
   socket.on('load_playlist', function(data) {
@@ -116,46 +100,32 @@ app.get('/', function(req, res) {
 });
 
 app.post('/start', function(req, res) {
-  res.redirect("/" + req.param('twitter'))
+  res.redirect("/" + req.param('twitter'));
 });
 
 app.get('/:handle', function (req, res) {
   var handle = req.params.handle;
 
-  if (player) {
-    res.sendfile(__dirname + '/views/viewPlaylist.html');
-  } else {
+  // Initializes and starts twitter stream
+  requested_hash["/" + handle] = [];
+  var stream = T.stream('user', {track: handle });
+  stream.on('tweet', function(tweet) {
+    if (tweet.entities.user_mentions.length > 0) {
+      console.log(tweet.text);
+      var removeName = RegExp("@"+handle, 'gi');
+      var songName = tweet.text.replace(removeName, "");
+      console.log("Twitter Song Request " + songName);
+      youtube.search(songName, "/" + handle, addToRequestedList);
+    } else {
 
-    // Initializes and starts twitter stream
-    requested_hash["/" + handle] = [];
-    var stream = T.stream('user', {track: handle });
-    stream.on('tweet', function(tweet) {
-      if (tweet.entities.user_mentions.length > 0) {
-        console.log(tweet.text);
-        var removeName = RegExp("@"+handle, 'gi');
-        var songName = tweet.text.replace(removeName, "");
-        console.log("Twitter Song Request " + songName);
-        youtube.search(songName, "/" + handle, addToRequestedList);
-      } else {
-
-      }
-    });
-    res.sendfile(__dirname + '/views/player.html');
-  }
+    }
+  });
+  res.sendfile(__dirname + '/views/player.html');
 });
-
-app.all('*', function(req, res, next) {
-  res.set('Access-Control-Allow-Origin', '*');
-  res.set('Access-Control-Allow-Methods', 'GET, POST, DELETE, PUT');
-  res.set('Access-Control-Allow-Headers', 'X-Requested-With, Content-Type');
-  if ('OPTIONS' == req.method) return res.send(200);
-  next();
-});
-
-
-//Connection to the browser
 
 function sendPlayNext(room) {
+  console.log(room, "requesting new song")
+  console.log(requested_hash)
   if (requested_hash[room].length > 0) {
     sendRequested(room);
   } else {
@@ -163,7 +133,6 @@ function sendPlayNext(room) {
   }
   sendLoadPlaylist(room);
 }
-
 
 function sendLoadPlaylist(room) {
   io.sockets.in(room).emit('load_playlist', activePlaylist(room));
@@ -182,12 +151,12 @@ function sendRequested(room) {
   default_list.push(current_song);
 }
 
-function sendStopSong(room, data) {
-  io.sockets.in(room).emit('stop_song', data);
+function sendStopSong(room) {
+  io.sockets.in(room).emit('stop_song');
 }
 
-function sendPlaySong(room, data) {
-  io.sockets.in(room).emit('play_song', data);
+function sendPlaySong(room) {
+  io.sockets.in(room).emit('play_song');
 }
 
 function activePlaylist(room) {
