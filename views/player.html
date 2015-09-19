@@ -31,7 +31,8 @@
   <script src="/jquery.ui.touch-punch.min.js"></script>
   <script>
     var twitter = window.location.pathname;
-    var socket = io.connect("localhost:5000");
+    var host = window.location.host;
+    var socket = io.connect(window.location.host);
     var player;
 
     socket.on('connect', function () {
