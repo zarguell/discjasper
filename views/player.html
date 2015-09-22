@@ -32,7 +32,7 @@
   <script>
     var twitter = window.location.pathname;
     var host = window.location.host;
-    var socket = io.connect(window.location.host);
+    var socket = io.connect(host);
     var player;
 
     socket.on('connect', function () {
