@@ -32,8 +32,7 @@ body.player {
   position: absolute;
   top: 0;
   bottom: 0;
-  right: 0;
-  background: blue; }
+  right: 0; }
 
 .large-image {
   position: fixed;
@@ -135,7 +134,7 @@ body.player {
     font-size: 28px;
     cursor: pointer;
     border-right: 1px solid black; }
-  .toolbar .stopSong:after {
+  .toolbar .stopIcon:after {
     box-sizing: border-box;
     content: "\f04c";
     background: yellow;
@@ -146,7 +145,7 @@ body.player {
     font-size: 28px;
     cursor: pointer;
     border-right: 1px solid black; }
-  .toolbar .playSong:after {
+  .toolbar .playIcon:after {
     box-sizing: border-box;
     background: yellow;
     content: "\f04b";
@@ -165,6 +164,9 @@ body.player {
     white-space: nowrap;
     overflow: hidden;
     font-weight: bold; }
+
+.data {
+  display: none; }
 
 #plist li {
   background: #e0eff9;
@@ -189,14 +191,16 @@ body.player {
   overflow: hidden; }
   #plist li.no-icon {
     padding-left: 5px; }
+  #plist li.twitter {
+    background: url("https://images.duckduckgo.com/iu/?u=http%3A%2F%2Fwemeantwell.com%2Fblog%2Fwp-content%2Fuploads%2F2013%2F09%2Ftwitter-bird-white-on-blue.png&f=1"); }
+  #plist li.local {
+    background: purple; }
   #plist li.ui-sortable-helper {
     box-shadow: 5px 5px 5px black;
     background: #c9d2d7;
     text-shadow: none; }
     #plist li.ui-sortable-helper .trash:after {
       background: #c9d2d7; }
-  #plist li .data {
-    display: none; }
   #plist li .title {
     vertical-align: middle; }
   #plist li .handle:after {
@@ -218,5 +222,3 @@ body.player {
     top: 10px;
     right: 5px;
     background: #e0eff9; }
-
-/*# sourceMappingURL=main.css.map */

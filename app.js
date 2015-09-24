@@ -18,20 +18,20 @@ var billboard = require('./billboard');
 
 var Twit = require('twit');
 var T = new Twit({
-    consumer_key: config.twitter_api_key,
-    consumer_secret: config.twitter_api_secret,
-    access_token: config.twitter_access_token,
-    access_token_secret: config.twitter_access_token_secret
+  consumer_key: config.twitter_api_key,
+  consumer_secret: config.twitter_api_secret,
+  access_token: config.twitter_access_token,
+  access_token_secret: config.twitter_access_token_secret
 });
 
 // Starting with no requests and an empty default list
-var current_song;
 var requested_hash = {};
 var default_list = [];
 
-billboard.top100(function (r,b) {
-  default_list.push(b);
-  console.log("adding", b);
+billboard.top100( function(song) {
+  song.source = "billboard";
+  default_list.push(song);
+  console.log("Adding to default playlist ", song);
 });
 
 console.log('app started on port ' + server.address().port);
@@ -46,54 +46,69 @@ app.set("view options", {layout: false});
 
 var io = require('socket.io').listen(server);
 io.sockets.on('connection', function (socket){
-  console.log("has connection");
-  socket.on('USE', function(twitter) {
-    console.log(twitter);
-    socket.join(twitter);
-    socket.room = twitter;
+
+  console.log("BROWSER FOUND");
+
+  socket.on('USE', function(room) {
+    console.log(room);
+    socket.join(room);
+    socket.room = room;
   });
 
   socket.on('disconnect', function () {
-    console.log("a client left");
+    console.log("BROWSER LEFT");
   });
 
   socket.on('next_song', function () {
-    sendPlayNext(socket.room);
+    var room = socket.room;
+    current_song = requested_hash[room].shift();
+    requested_hash[room].push(current_song);
+    sendLoadPlaylist(room);
   });
 
   socket.on('stop_song', function () {
-    sendStopSong(socket.room);
+    io.sockets.in(socket.room).emit('stop_song');
   });
 
   socket.on('play_song', function () {
-    sendPlaySong(socket.room);
+    io.sockets.in(socket.room).emit('play_song');
   });
 
   socket.on('load_playlist', function(data) {
     sendLoadPlaylist(socket.room);
   });
 
-  socket.on('current_song', function(data) {
-    io.sockets.in(socket.room).emit('current_song', current_song);
-  });
+  socket.on('song_request', function(data) {
+    var room = socket.room;
+    youtube.search(data.q, function (song) {
+      song.source = "local";
 
-  socket.on('add_song_to_end', function(data) {
-    youtube.search(data.q, data.room, function (room, r) {
-      requested_hash[room].push(r);
-      sendLoadPlaylist(socket.room);
+      // Place the song in the highest possible non-requested position
+      for (var i = 1; i < requested_hash[room].length; i++) {
+        if (requested_hash[room][i].source == "billboard") {
+            requested_hash[room].splice(i, 0, song);
+            console.log(requested_hash[room]);
+            break;
+        }
+      }
+      sendLoadPlaylist(room);
     });
   });
 
   socket.on('update_playlist', function(data) {
-    if (requested_hash[data.room].length > 0) {
-      requested_hash[data.room]= data.playlist;
-    } else {
-      default_list = data.playlist;
+    var room = socket.room;
+    if (requested_hash[room].length > 0) {
+      requested_hash[room] = data.playlist;
+      sendLoadPlaylist(room);
     }
-    sendLoadPlaylist(data.room);
   });
 
 });
+
+function sendLoadPlaylist(room) {
+  if (requested_hash[room].length > 0)
+  io.sockets.in(room).emit('load_playlist', requested_hash[room]);
+}
 
 app.get('/', function(req, res) {
   res.sendfile(__dirname + "/views/index.html");
@@ -105,70 +120,42 @@ app.post('/start', function(req, res) {
 
 app.get('/:handle', function (req, res) {
   var handle = req.params.handle;
+  var room = "/" + handle;
 
-  // Initializes and starts twitter stream
-  requested_hash["/" + handle] = [];
-  var stream = T.stream('user', {track: handle });
+  // Determine if we need to populate the room from scratch or not
+  if ( !requested_hash[room] || requested_hash[room].length < 1) {
+    console.log("CREATING NEW ROOM: ", room);
+    requested_hash[room] = default_list.slice(0,5);
+  }
+
+  // Start listening for tweets to the requested handle
+  console.log("stream");
+  var stream = T.stream('user', { track: handle });
   stream.on('tweet', function(tweet) {
+    console.log("tweet receieved")
     if (tweet.entities.user_mentions.length > 0) {
-      console.log(tweet.text);
       var removeName = RegExp("@"+handle, 'gi');
       var songName = tweet.text.replace(removeName, "");
       console.log("Twitter Song Request " + songName);
-      youtube.search(songName, "/" + handle, addToRequestedList);
-    } else {
-
+      youtube.search(songName, function (song) {
+        song.source = "twitter";
+        requested_hash[room].push(song);
+        sendLoadPlaylist(room);
+      });
     }
   });
+
+  stream.on('disconnected', function(disconnectMessage) {
+    console.log("TWITTER STREAM DISCONNTED:", disconnectMessage);
+  });
+
+  stream.on('connected', function(disconnectMessage) {
+    console.log("TWITTER STREAM CONNECTED:", disconnectMessage);
+  });
+
+  stream.on('connect', function(disconnectMessage) {
+    console.log("TWITTER STREAM ATTEMPTED CONNECTION:", disconnectMessage );
+  });
+
   res.sendfile(__dirname + '/views/player.html');
 });
-
-function sendPlayNext(room) {
-  console.log(room, "requesting new song")
-  console.log(requested_hash)
-  if (requested_hash[room].length > 0) {
-    sendRequested(room);
-  } else {
-    sendDefault(room);
-  }
-  sendLoadPlaylist(room);
-}
-
-function sendLoadPlaylist(room) {
-  io.sockets.in(room).emit('load_playlist', activePlaylist(room));
-}
-
-function sendDefault(room) {
-  current_song = default_list.shift();
-  io.sockets.in(room).emit('next_song', current_song);
-  console.log(current_song);
-  default_list.push(current_song);
-}
-
-function sendRequested(room) {
-  current_song = requested_hash[room].shift();
-  io.sockets.in(room).emit('next_song', current_song);
-  default_list.push(current_song);
-}
-
-function sendStopSong(room) {
-  io.sockets.in(room).emit('stop_song');
-}
-
-function sendPlaySong(room) {
-  io.sockets.in(room).emit('play_song');
-}
-
-function activePlaylist(room) {
-  if (requested_hash[room].length > 0) {
-    return requested_hash[room];
-  } else {
-    return default_list;
-  }
-}
-
-function addToRequestedList(room, r) {
-  requested_hash[room].push(r);
-  sendLoadPlaylist(room);
-}
-exports.addToRequestedList = addToRequestedList;

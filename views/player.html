@@ -30,43 +30,12 @@
   <script src="/jquery-ui.min.js"></script>
   <script src="/jquery.ui.touch-punch.min.js"></script>
   <script>
+
     var twitter = window.location.pathname;
     var host = window.location.host;
     var socket = io.connect(host);
     var player;
-
-    socket.on('connect', function () {
-      console.log("connected to server");
-      socket.emit("USE", twitter);
-      nextSong();
-    });
-
-    function nextSong() {
-      socket.emit("next_song");
-      console.log("requesting next song");
-    }
-
-    function playVideo(obj) {
-      if (player) player.loadVideoById(obj.id, 0, "large");
-      console.log("player" +obj.id);
-    }
-
-    socket.on('next_song', function(obj) {
-      console.log("got new song");
-      playVideo(obj);
-    });
-
-    socket.on('stop_song', function(obj) {
-      if (player) player.pauseVideo();
-    });
-
-    socket.on('play_song', function(obj) {
-      if (player) player.playVideo();
-    });
-
-    socket.on('disconnect', function () {
-      console.log("disconnected from server")
-    });
+    var currentPlaylist = [];
 
     var tag = document.createElement('script');
     tag.src = "https://www.youtube.com/iframe_api";
@@ -79,31 +48,74 @@
         width: '100%',
         videoId: "lO45DNkBMi4", // loading animation video
         events: {
-          'onReady': onPlayerReady,
-          'onStateChange': onPlayerStateChange
+          'onReady': onYoutubeIframeAPILoaded,
+          'onStateChange': onYoutubeIframeAPIUpdate
         }
       });
     }
 
-    // iframe loaded, ask the socket for the next video
-    function onPlayerReady(event) {
-      nextSong();
+    socket.on('connect', function () {
+      console.log("connected to server");
+      socket.emit("USE", twitter);
+      $(".currentsongname").html("Waiting...");
+    });
+
+    socket.on('disconnect', function () {
+      console.log("disconnected from server")
+    });
+
+    function nextSong() {
+      socket.emit("next_song");
+      console.log("requesting next song");
     }
 
-    function onPlayerStateChange(event) {
-      if (event.data == YT.PlayerState.PLAYING) {
-        socket.emit("play_song");
-      }
+    socket.on('next_song', function(obj) {
+      console.log("got new song");
+    });
 
-      if (event.data == YT.PlayerState.PAUSED) {
-        socket.emit("stop_song");
-      }
+    function playSong() {
+      socket.emit("play_song");
+    }
 
+    socket.on('play_song', function(obj) {
+      if (player) {
+        player.playVideo();
+        $("#playPause").removeClass("playIcon").addClass("stopIcon");
+      }
+    });
+
+    function stopSong() {
+      socket.emit("stop_song");
+    }
+
+    socket.on('stop_song', function() {
+      if (player) {
+        player.pauseVideo();
+        $("#playPause").removeClass("stopIcon").addClass("playIcon");
+      }
+    });
+
+    function onYoutubeIframeAPILoaded() {
+        playSong();
+        nextSong();
+    }
+
+    function onYoutubeIframeAPIUpdate(event) {
+      if (event.data == YT.PlayerState.PLAYING) playSong();
+      if (event.data == YT.PlayerState.PAUSED) stopSong();
       if (event.data == YT.PlayerState.ENDED) {
-        console.log("video finished playing");
+        console.log("Song Finished");
         nextSong();
       }
     }
+
+    $(".toolbar").on("click",".stopSong, .playSong", function(e) {
+      if ($("#playPause").hasClass("stopIcon")) {
+        stopSong();
+      } else {
+        playSong();
+      }
+    });
 
     $("#plist").sortable({
       axis: "y",
@@ -111,52 +123,47 @@
       containment: "document",
       tolerance: "pointer",
       stop: function( event, ui ) {
-        htmlToList();
         editedPlaylist();
       }
     });
 
     $("#plist").on("click",".trash", function(e) {
       $(this).parent().remove();
-      htmlToList();
       editedPlaylist();
     });
 
-    socket.on('connect', function () {
-      console.log("connected to server");
-    });
-
-    socket.on('stop_song', function() {
-      playIcon();
-    });
-
-    socket.on('play_song', function() {
-      stopIcon();
-    });
-
-    socket.emit("load_playlist",{});
-    socket.on('load_playlist', function(obj) {
-      currentPlaylist = obj;
-      addWholePlToList();
-    });
-
-    function updateSongInfo(obj) {
-      if (obj) $(".currentSongName").html(obj.title);
-      else $(".currentSongName").html("Waiting for player...");
+    function editedPlaylist() {
+      var newList = [];
+      newList.push(JSON.parse($(".currentSongName .data").html()));
+      $("#plist li:not(.ui-sortable-placeholder)").each( function() {
+        newList.push(JSON.parse($(this).find(".data").html()));
+      });
+      socket.emit("update_playlist", {playlist: newList});
     }
 
-    socket.emit("current_song",{});
-    socket.on('current_song', function(obj) {
-      updateSongInfo(obj);
-    });
+    socket.emit("load_playlist",{});
+    socket.on('load_playlist', function(newPlaylist) {
+      $("#plist").html("");
+      newSong = newPlaylist[0];
 
-    socket.on('next_song', function(obj) {
-      updateSongInfo(obj);
-    });
+      // play the first song, if not different then don't reload
 
+      if (player && newSong && currentPlaylist && JSON.stringify(newSong) != JSON.stringify(currentPlaylist[0]))  {
+        player.loadVideoById(newSong.id, 0, "large");
+        $(".currentSongName").html(newSong.title + '<div class="data">' + JSON.stringify(newSong) + '</div>').addClass(newSong.source);
+        console.log("Playing: " + newSong.title);
+      }
+
+      for(var i = 1; i < newPlaylist.length; i++) {
+        var h = '<li class="pitem ' + newPlaylist[i].source + '"><div class="handle icon"></div><span class="title">' + newPlaylist[i].title + '</span>' +
+          '<div class="data">' + JSON.stringify(newPlaylist[i])  + '</div><div class="trash icon"></div></li>';
+        $("#plist").append(h);
+      }
+      currentPlaylist = newPlaylist;
+    });
 
     $(".skipSong").click( function () {
-      socket.emit("next_song");
+      nextSong();
     });
 
     $(".searchSong").click( function() {
@@ -164,16 +171,9 @@
       $(".searchbar input").focus();
     });
 
-    $(".toolbar").on("click",".stopSong, .playSong", function(e) {
-      if ($("#playPause").hasClass("stopSong")) {
-        socket.emit("stop_song");
-      } else {
-        socket.emit("play_song");
-      }
-    });
-
+    // Add a new song by pressing enter or clicking the add button
     function addSong() {
-      socket.emit("add_song_to_end",{q: $(".searchbar input").val(), room: twitter});
+      socket.emit("song_request", { q: $(".searchbar input").val() });
       $(".searchbar input").val("");
       $(".searchbar").hide();
     }
@@ -189,35 +189,6 @@
     });
 
 
-    function editedPlaylist() {
-      socket.emit("update_playlist", {room: twitter, playlist: currentPlaylist});
-    }
-
-    function htmlToList() {
-      var newList = [];
-      $("#plist li:not(.ui-sortable-placeholder)").each( function() {
-        newList.push(JSON.parse($(this).find(".data").html()));
-      });
-      currentPlaylist = newList;
-    }
-
-    function playIcon() {
-      $("#playPause").removeClass("stopSong").addClass("playSong");
-    }
-
-    function stopIcon() {
-      $("#playPause").removeClass("playSong").addClass("stopSong");
-    }
-
-
-    function addWholePlToList() {
-      $("#plist").html("");
-      for(var i = 0; i < currentPlaylist.length; i++) {
-        var h = '<li class="pitem"><div class="handle icon"></div><span class="title">' + currentPlaylist[i].title + '</span>' +
-          '<div class="data">' + JSON.stringify(currentPlaylist[i])  + '</div><div class="trash icon"></div></li>';
-        $("#plist").append(h);
-      }
-    }
   </script>
 </body>
 </html>
