@@ -18,10 +18,10 @@ var billboard = require('./billboard');
 
 var Twit = require('twit');
 var T = new Twit({
-  consumer_key: config.twitter_api_key,
-  consumer_secret: config.twitter_api_secret,
-  access_token: config.twitter_access_token,
-  access_token_secret: config.twitter_access_token_secret
+  consumer_key: process.env.TWITTER_API_KEY,
+  consumer_secret: process.env.TWITTER_API_SECRET,
+  access_token: process.env.TWITTER_ACCESS_TOKEN,
+  access_token_secret: process.env.TWITTER_ACCESS_TOKEN_SECRET
 });
 
 // Starting with no requests and an empty default list
