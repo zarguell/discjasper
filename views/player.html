@@ -96,8 +96,8 @@
     });
 
     function onYoutubeIframeAPILoaded() {
-        playSong();
         nextSong();
+        playSong();
     }
 
     function onYoutubeIframeAPIUpdate(event) {
@@ -141,7 +141,6 @@
       socket.emit("update_playlist", {playlist: newList});
     }
 
-    socket.emit("load_playlist",{});
     socket.on('load_playlist', function(newPlaylist) {
       $("#plist").html("");
       newSong = newPlaylist[0];

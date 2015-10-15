@@ -2,8 +2,6 @@ var express = require('express');
 var app = express();
 var server = app.listen(5000);
 
-var config = require('./config');
-exports.config = config;
 var io = require('socket.io').listen(server);
 exports.io = io;
 var FeedParser = require('feedparser');
@@ -72,10 +70,6 @@ io.sockets.on('connection', function (socket){
 
   socket.on('play_song', function () {
     io.sockets.in(socket.room).emit('play_song');
-  });
-
-  socket.on('load_playlist', function(data) {
-    sendLoadPlaylist(socket.room);
   });
 
   socket.on('song_request', function(data) {
