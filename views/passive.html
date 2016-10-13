@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>Clique Play > Music Player</title>
+  <link href="main.css" rel="stylesheet"/>
+</head>
+<body class="player">
+  <div class="playlist" style="width:100%">
+    <div class="searchbar" style="display:none;">
+      <div class="addSong icon"></div>
+      <form class="searchBox">
+        <input placeholder="Enter song name and artist" type="text"/>
+      </form>
+    </div>
+    <div class="toolbar">
+      <div class="searchSong icon"></div>
+      <div class="currentSongName"></div>
+    </div>
+    <div id="plist">
+    </div>
+  </div>
+  <script src="https://cdn.socket.io/socket.io-1.0.6.js"></script>
+  <script src="http://code.jquery.com/jquery-1.11.1.js"></script>
+  <script src="/jquery-ui.min.js"></script>
+  <script src="/jquery.ui.touch-punch.min.js"></script>
+  <script>
+
+    var host = window.location.host;
+    var socket = io.connect(host);
+    var currentPlaylist = [];
+
+    socket.on('connect', function () {
+      console.log("connected to server");
+      $(".currentsongname").html("Waiting...");
+    });
+
+    socket.on('disconnect', function () {
+      console.log("disconnected from server")
+    });
+
+    socket.on('load_playlist', function(newPlaylist) {
+      $("#plist").html("");
+      newSong = newPlaylist[0];
+
+      // play the first song, if not different then don't reload
+
+      if (newSong && currentPlaylist && JSON.stringify(newSong) != JSON.stringify(currentPlaylist[0]))  {
+        $(".currentSongName").html(newSong.title + '<div class="data">' + JSON.stringify(newSong) + '</div>').addClass(newSong.source);
+        console.log("Playing: " + newSong.title);
+      }
+
+      for(var i = 1; i < newPlaylist.length; i++) {
+        var h = '<li class="pitem ' + newPlaylist[i].source + '"><span class="title">' + newPlaylist[i].title + '</span>' +
+          '<div class="data">' + JSON.stringify(newPlaylist[i])  + '</div></li>';
+        $("#plist").append(h);
+      }
+      currentPlaylist = newPlaylist;
+    });
+
+    $(".searchSong").click( function() {
+      $(".searchbar").toggle();
+      $(".searchbar input").focus();
+    });
+
+    // Add a new song by pressing enter or clicking the add button
+    function addSong() {
+      socket.emit("song_request", { q: $(".searchbar input").val() });
+      $(".searchbar input").val("");
+      $(".searchbar").hide();
+    }
+
+    $(".addSong").click( function(e) {
+      e.preventDefault();
+      addSong();
+    });
+
+    $(".searchBox").submit(function (e){
+      e.preventDefault();
+      addSong();
+    });
+
+
+  </script>
+</body>
+</html>

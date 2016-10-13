@@ -1,4 +1,4 @@
-var http = require('./app').http;
+var http = require('http');
 var youtube = require("youtube-api");
 
 youtube.authenticate({

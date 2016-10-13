@@ -32,7 +32,8 @@ body.player {
   position: absolute;
   top: 0;
   bottom: 0;
-  right: 0; }
+  right: 0; 
+  overflow-y:auto;}
 
 .large-image {
   position: fixed;
@@ -191,10 +192,6 @@ body.player {
   overflow: hidden; }
   #plist li.no-icon {
     padding-left: 5px; }
-  #plist li.twitter {
-    background: url("https://images.duckduckgo.com/iu/?u=http%3A%2F%2Fwemeantwell.com%2Fblog%2Fwp-content%2Fuploads%2F2013%2F09%2Ftwitter-bird-white-on-blue.png&f=1"); }
-  #plist li.local {
-    background: purple; }
   #plist li.ui-sortable-helper {
     box-shadow: 5px 5px 5px black;
     background: #c9d2d7;

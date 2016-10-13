@@ -1,5 +1,5 @@
-var http = require('./app').http;
-var FeedParser = require('./app').FeedParser;
+var http = require('http');
+var FeedParser = require('feedparser');
 var youtube = require('./app').youtube;
 
 // PRIMARY DATA SOURCES

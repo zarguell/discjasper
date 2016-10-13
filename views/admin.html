@@ -8,8 +8,7 @@
   <link href="main.css" rel="stylesheet"/>
 </head>
 <body class="player">
-  <div class="yt" id="player"></div>
-  <div class="playlist">
+  <div class="playlist" style="width:100%">
     <div class="searchbar" style="display:none;">
       <div class="addSong icon"></div>
       <form class="searchBox">
@@ -33,26 +32,7 @@
 
     var host = window.location.host;
     var socket = io.connect(host);
-    var player;
     var currentPlaylist = [];
-
-    var tag = document.createElement('script');
-    tag.src = "https://www.youtube.com/iframe_api";
-    var firstScriptTag = document.getElementsByTagName('script')[0];
-    firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
-
-    function onYouTubeIframeAPIReady() {
-      player = new YT.Player('player', {
-        height: '100%',
-        width: '100%',
-        videoId: "lO45DNkBMi4", // loading animation video
-        events: {
-          'onReady': onYoutubeIframeAPILoaded,
-          'onStateChange': onYoutubeIframeAPIUpdate,
-          'onError': onYoutubeIframeAPIError
-        }
-      });
-    }
 
     socket.on('connect', function () {
       console.log("connected to server");
@@ -77,10 +57,7 @@
     }
 
     socket.on('play_song', function(obj) {
-      if (player) {
-        player.playVideo();
-        $("#playPause").removeClass("playIcon").addClass("stopIcon");
-      }
+      $("#playPause").removeClass("playIcon").addClass("stopIcon");
     });
 
     function stopSong() {
@@ -88,37 +65,8 @@
     }
 
     socket.on('stop_song', function() {
-      if (player) {
-        player.pauseVideo();
-        $("#playPause").removeClass("stopIcon").addClass("playIcon");
-      }
+      $("#playPause").removeClass("stopIcon").addClass("playIcon");
     });
-
-    function onYoutubeIframeAPILoaded() {
-        nextSong();
-        playSong();
-    }
-
-    function onYoutubeIframeAPIUpdate(event) {
-      console.log(event)
-      if (event.data == YT.PlayerState.PLAYING) playSong();
-      if (event.data == YT.PlayerState.PAUSED) stopSong();
-      if (event.data == YT.PlayerState.ENDED) {
-        console.log("Song Finished");
-        nextSong();
-      }
-    }
-
-    function onYoutubeIframeAPIError(event) {
-      console.log("youtube was unable to play video")
-      // add everything after the currently playing video as the new playlist
-      var newList = [];
-       $("#plist li:not(.ui-sortable-placeholder)").each( function() {
-        newList.push(JSON.parse($(this).find(".data").html()));
-      });
-      socket.emit("update_playlist", {playlist: newList});
-      
-    }
 
     $(".toolbar").on("click",".stopSong, .playSong", function(e) {
       if ($("#playPause").hasClass("stopIcon")) {
@@ -158,8 +106,7 @@
 
       // play the first song, if not different then don't reload
 
-      if (player && newSong && currentPlaylist && JSON.stringify(newSong) != JSON.stringify(currentPlaylist[0]))  {
-        player.loadVideoById(newSong.id, 0, "large");
+      if (newSong && currentPlaylist && JSON.stringify(newSong) != JSON.stringify(currentPlaylist[0]))  {
         $(".currentSongName").html(newSong.title + '<div class="data">' + JSON.stringify(newSong) + '</div>').addClass(newSong.source);
         console.log("Playing: " + newSong.title);
       }
