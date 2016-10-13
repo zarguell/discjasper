@@ -1,8 +1,6 @@
 Disc Jasper
 ==========
 
-Tweet to Youtube song playlist
-
 Dependencies:
 `nodejs`
 
@@ -26,6 +24,6 @@ to view the basic playlist (allows viewing and adding songs only)
 
     http://localhost:5000/
 
-to view the active playlist
+to use the editable playlist
 
     http://localhost:5000/admin
