@@ -17,12 +17,15 @@ then run
     node app.js
 
 open your browser to 
-    localhost:5000/player
+
+    http://localhost:5000/player
 
 this must remain open to play music
 
-to view the passive playlist
-    localhost:5000/
+to view the basic playlist (allows viewing and adding songs only)
+
+    http://localhost:5000/
 
 to view the active playlist
-    localhost:5000/admin
+
+    http://localhost:5000/admin
