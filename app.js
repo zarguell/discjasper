@@ -56,6 +56,7 @@ io.sockets.on('connection', function (socket){
   });
 
   socket.on('song_request', function(data) {
+    console.log(data)
     youtube.search(data.q, function (song) {
       song.source = "local";
 
@@ -63,7 +64,6 @@ io.sockets.on('connection', function (socket){
       for (var i = 1; i < requested_list.length; i++) {
         if (requested_list[i].source == "billboard") {
             requested_list.splice(i, 0, song);
-            console.log(requested_list);
             break;
         }
       }
