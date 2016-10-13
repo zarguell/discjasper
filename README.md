@@ -8,10 +8,8 @@ Dependencies:
 
 Download the files with:
 
-    git clone https://github.com/middleinitial/discjasper
+    git clone https://github.com/davidsongirard/discjasper
     cd discjasper
-
-initialize the config.js file (twitter api keys required)
 
 then run
 
@@ -20,6 +18,7 @@ then run
 
 open your browser to 
     localhost:5000/player
+
 this must remain open to play music
 
 to view the passive playlist
@@ -27,6 +26,3 @@ to view the passive playlist
 
 to view the active playlist
     localhost:5000/admin
-
-to view a slave version of the video player
-    localhost:5000/clone
