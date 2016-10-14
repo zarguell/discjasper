@@ -14,11 +14,11 @@ var youtube = require('./youtube');
 exports.youtube = youtube;
 var billboard = require('./billboard');
 
-var Twit = require('twit');
-var T = new Twit({
-  consumer_key: process.env.TWITTER_API_KEY,
-  consumer_secret: process.env.TWITTER_API_SECRET,
-  access_token: process.env.TWITTER_ACCESS_TOKEN,
+var Twitter = require('twitter');
+var T = new Twitter({
+  consumer_key: process.env.TWITTER_CONSUMER_KEY,
+  consumer_secret: process.env.TWITTER_CONSUMER_SECRET,
+  access_token_key: process.env.TWITTER_ACCESS_TOKEN_KEY,
   access_token_secret: process.env.TWITTER_ACCESS_TOKEN_SECRET
 });
 
@@ -124,8 +124,9 @@ app.get('/:handle', function (req, res) {
 
   // Start listening for tweets to the requested handle
   console.log("stream");
-  var stream = T.stream('user', { track: handle });
-  stream.on('tweet', function(tweet) {
+  //  var stream = T.stream('user', { track: 'handle' });
+  T.stream('user', {track: 'handle'}, function(stream) {
+    stream.on('data', function(tweet) {
     console.log("tweet receieved")
     if (tweet.entities.user_mentions.length > 0) {
       var removeName = RegExp("@"+handle, 'gi');
@@ -139,17 +140,24 @@ app.get('/:handle', function (req, res) {
     }
   });
 
-  stream.on('disconnected', function(disconnectMessage) {
+    stream.on('error', function(error) {
+      console.log(error);
+    });
+
+     stream.on('disconnected', function(disconnectMessage) {
     console.log("TWITTER STREAM DISCONNTED:", disconnectMessage);
-  });
+    });
 
   stream.on('connected', function(disconnectMessage) {
     console.log("TWITTER STREAM CONNECTED:", disconnectMessage);
-  });
+    });
 
   stream.on('connect', function(disconnectMessage) {
     console.log("TWITTER STREAM ATTEMPTED CONNECTION:", disconnectMessage );
+    });
   });
+
+ 
 
   res.sendfile(__dirname + '/views/player.html');
 });

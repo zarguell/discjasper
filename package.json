@@ -9,6 +9,7 @@
     "twit": "2.1.0",
     "feedparser":"0.16.3",
     "youtube-api": "0.3.2",
-    "nodemon": "1.2.1"
+    "nodemon": "1.2.1",
+    "twitter": "1.4.0",
   }
 }
